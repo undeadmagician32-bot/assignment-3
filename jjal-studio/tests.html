@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>극단 입력 검사</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+  <h1>극단 입력 12건 검사표 <a class="hint" href="index.html">← 편집기</a></h1>
+  <p class="hint">페이지를 열면 브라우저에서 즉시 실행됩니다. ‘수정 전’은 개발 초기 단순 구현(<code>js/legacy-layout.js</code>)을, ‘수정 후’는 현재 엔진(<code>js/core.js</code>)을 같은 입력으로 돌린 결과입니다.</p>
+  <p id="sum"><b>실행 중…</b></p>
+  <h2>극단 입력 12건 (T03-C14·C15·C16)</h2>
+  <table id="t12"></table>
+  <h2>보조 검사 (화면↔파일·메타데이터·템플릿·JSON)</h2>
+  <table id="tx"></table>
+</main>
+<script src="js/core.js"></script>
+<script src="js/legacy-layout.js"></script>
+<script src="js/tests.js"></script>
+</body>
+</html>

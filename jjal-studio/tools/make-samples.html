@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>샘플 생성기</title></head>
+<body><pre id="out">running</pre>
+<script src="../js/core.js"></script>
+<script>
+/* 앱의 drawScene으로 완성 이미지 3장과 시험용 입력 이미지를 만든다 (헤드리스 브라우저에서 실행) */
+(async () => {
+  const C = StudioCore, res = {};
+  const blob = (c, t) => c.toDataURL(t, 0.92).split(',')[1];
+  const b64 = async (b) => { return b; /*dataURL 경로*/ const x = async () => { const u = new Uint8Array(await b.arrayBuffer()); let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); }; };
+  const embedB64 = (s, type) => { const bin = atob(s), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); const o = C.Meta.embed(u, type, C.Meta.text({ own: true })); let r = ''; for (let i = 0; i < o.length; i += 0x8000) r += String.fromCharCode.apply(null, o.subarray(i, i + 0x8000)); return btoa(r); };
+  const T = (o) => C.makeText(o);
+  const finals = [
+    { file: 'final-1-meme-1x1.png', type: 'image/png', s: { ratio: '1:1', bg: '#1f2a44', fit: 'cover', zoom: 1, imgX: 0, imgY: 0, img: 'square',
+      texts: [T({ text: '월요일의 나\n(이미 퇴근하고 싶음) 😴', y: 0.2, size: 0.075 }), T({ text: '커피 한 잔이면 괜찮아', y: 0.85, size: 0.06, color: '#ffe066' })] } },
+    { file: 'final-2-card-4x5.png', type: 'image/png', s: { ratio: '4:5', bg: '#102a43', fit: 'cover', zoom: 1.2, imgX: 0.2, imgY: 0, img: 'portrait',
+      texts: [T({ text: '오늘의 한 줄', y: 0.12, size: 0.05, color: '#ffffff' }), T({ text: '천천히 가도 괜찮아,\n멈추지만 않으면.', y: 0.5, size: 0.085, color: '#fff4b0' }), T({ text: '짤·카드 스튜디오 · Hello World 🌱', y: 0.92, size: 0.04, bold: false })] } },
+    { file: 'final-3-story-9x16.jpg', type: 'image/jpeg', s: { ratio: '9:16', bg: '#2d1b4e', fit: 'cover', zoom: 1, imgX: 0, imgY: 0, img: 'landscape',
+      texts: [T({ text: 'SALE 🎉', y: 0.25, size: 0.16, color: '#ffffff' }), T({ text: '이번 주말 한정!\n모든 짤 50% 할인', y: 0.5, size: 0.08 }), T({ text: 'swipe up ↑', y: 0.88, size: 0.05, color: '#7ef0ff' })] } }
+  ];
+  for (const f of finals) {
+    const s = Object.assign({}, f.s, { img: C.makeSampleCanvas(f.s.img) });
+    const c = document.createElement('canvas'); C.sizeCanvas(c, s.ratio); C.drawScene(c.getContext('2d'), s);
+    res[f.file] = embedB64(await b64(await blob(c, f.type)), f.type);
+  }
+  res['input-landscape.png'] = await b64(await blob(C.makeSampleCanvas('landscape'), 'image/png'));
+  res['input-portrait.jpg'] = await b64(await blob(C.makeSampleCanvas('portrait'), 'image/jpeg'));
+  res['input-alpha.png'] = await b64(await blob(C.makeSampleCanvas('alpha'), 'image/png'));
+  document.getElementById('out').textContent = 'JSON:' + JSON.stringify(res) + ':END';
+})();
+</script></body></html>
