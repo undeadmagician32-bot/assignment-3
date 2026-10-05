@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>짤·카드 스튜디오</title>
+<meta name="description" content="이미지와 문구를 조합해 밈·카드·SNS 이미지를 만드는 무로그인 편집기">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%236a5acd'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='white'%3E짤%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="top">
+  <h1>짤·카드 스튜디오</h1>
+  <p class="sub">로그인 없이 · 서버로 전송 없이 · 내 브라우저 안에서만 만들어요</p>
+</header>
+
+<div id="status" class="status" role="status" aria-live="polite"></div>
+
+<main class="layout">
+  <!-- 편집 도구 -->
+  <section class="tools" aria-label="편집 도구">
+    <div class="card" id="imageTools">
+      <h2>① 이미지 편집</h2>
+      <div class="row">
+        <label class="btn primary" for="file">PNG·JPEG 불러오기</label>
+        <input id="file" type="file" accept=".png,.jpg,.jpeg,image/png,image/jpeg" class="vh">
+        <span class="hint">또는 미리보기에 끌어다 놓기</span>
+      </div>
+      <div class="row">
+        <button type="button" id="sampleSquare" class="btn">샘플 PNG(정사각)</button>
+        <button type="button" id="sampleLandscape" class="btn">샘플 JPEG(가로)</button>
+        <button type="button" id="samplePortrait" class="btn">샘플 JPEG(세로)</button>
+        <button type="button" id="sampleAlpha" class="btn">샘플 투명 PNG</button>
+      </div>
+      <p id="imgInfo" class="info">현재 이미지: 없음</p>
+      <p id="imgError" class="error" role="alert" hidden></p>
+      <div class="grid2">
+        <label>맞춤
+          <select id="fit"><option value="cover">꽉 채우기(잘림)</option><option value="contain">전체 보이기(여백)</option></select>
+        </label>
+        <label>배경색 <input id="bg" type="color" value="#1f2a44"></label>
+        <label>확대 <output id="zoomO">1.0×</output><input id="zoom" type="range" min="1" max="3" step="0.05" value="1"></label>
+        <label>가로 이동 <input id="imgX" type="range" min="-1" max="1" step="0.02" value="0"></label>
+        <label>세로 이동 <input id="imgY" type="range" min="-1" max="1" step="0.02" value="0"></label>
+        <button type="button" id="rmImg" class="btn">이미지 제거</button>
+      </div>
+    </div>
+
+    <div class="card" id="textTools">
+      <h2>② 문구 편집</h2>
+      <div id="layerList" class="chips" role="tablist" aria-label="문구 목록"></div>
+      <div class="row">
+        <button type="button" id="addText" class="btn">+ 문구 추가</button>
+        <button type="button" id="delText" class="btn">선택 문구 삭제</button>
+        <button type="button" id="probe" class="btn">검사 문구 넣기</button>
+      </div>
+      <label class="block">문구 <span id="count" class="hint"></span>
+        <textarea id="tText" rows="3" maxlength="2000" placeholder="한글·English·이모지 😀 모두 가능"></textarea>
+      </label>
+      <p id="textWarn" class="warn" hidden></p>
+      <div class="grid2">
+        <label>가로 위치 <output id="xO"></output><input id="tX" type="range" min="0" max="100" step="1"></label>
+        <label>세로 위치 <output id="yO"></output><input id="tY" type="range" min="0" max="100" step="1"></label>
+        <label>크기 <output id="sO"></output><input id="tSize" type="range" min="2" max="20" step="0.5"></label>
+        <label>줄 너비 <output id="wO"></output><input id="tWidth" type="range" min="20" max="100" step="1"></label>
+        <label>색 <input id="tColor" type="color" value="#ffffff"></label>
+        <label>정렬
+          <select id="tAlign"><option value="left">왼쪽</option><option value="center">가운데</option><option value="right">오른쪽</option></select>
+        </label>
+        <label class="chk"><input id="tBold" type="checkbox"> 굵게</label>
+        <label class="chk"><input id="tStroke" type="checkbox"> 윤곽선</label>
+      </div>
+    </div>
+  </section>
+
+  <!-- 미리보기 -->
+  <section class="preview" aria-label="미리보기">
+    <div class="row between">
+      <div class="seg" role="radiogroup" aria-label="화면비">
+        <button type="button" class="segbtn" data-ratio="1:1" role="radio">1:1</button>
+        <button type="button" class="segbtn" data-ratio="4:5" role="radio">4:5</button>
+        <button type="button" class="segbtn" data-ratio="9:16" role="radio">9:16</button>
+      </div>
+      <label class="chk"><input id="guide" type="checkbox"> 가장자리 안내선</label>
+    </div>
+    <div class="stagewrap">
+      <div id="stage" class="stage">
+        <canvas id="cv" width="1080" height="1080" aria-label="미리보기 캔버스"></canvas>
+        <div id="ov" class="ov"><div id="selBox" class="selbox" hidden></div></div>
+      </div>
+    </div>
+    <p id="dim" class="hint center"></p>
+    <div class="row center">
+      <button type="button" id="dlPng" class="btn primary">PNG 내려받기</button>
+      <button type="button" id="dlJpg" class="btn primary">JPEG 내려받기</button>
+      <button type="button" id="dlAll" class="btn">3비율 모두(PNG)</button>
+      <button type="button" id="verify" class="btn">화면↔파일 대조</button>
+    </div>
+    <div class="row center">
+      <button type="button" id="provBtn" class="btn">출처·사용 권한 입력</button>
+      <span id="provInfo" class="hint"></span>
+    </div>
+    <p class="hint center">내려받는 파일은 캔버스에서 새로 만들어져 위치 정보(EXIF/GPS)가 들어가지 않고, 출처·사용 권한 기록만 파일 안에 들어갑니다.</p>
+    <div id="verifyOut" class="verify" aria-live="polite"></div>
+  </section>
+
+  <!-- 템플릿 -->
+  <section class="tpls" aria-label="템플릿">
+    <div class="card" id="tplCard">
+      <h2>③ 템플릿 <span id="tplCount" class="hint"></span></h2>
+      <p class="hint">이미지는 저장하지 않고 화면비·배경·문구 배치만 저장합니다.</p>
+      <div class="row">
+        <input id="tplName" type="text" maxlength="40" placeholder="템플릿 이름" aria-label="템플릿 이름">
+        <button type="button" id="tplSave" class="btn primary">새로 저장</button>
+      </div>
+      <p id="tplMsg" class="info" role="status"></p>
+      <ul id="tplList" class="tpllist"></ul>
+    </div>
+    <div class="card" id="jsonCard">
+      <h2>④ JSON 옮겨 쓰기</h2>
+      <div class="row">
+        <button type="button" id="jsonOut" class="btn">JSON 내보내기</button>
+        <label class="btn" for="jsonFile">JSON 파일 가져오기</label>
+        <input id="jsonFile" type="file" accept=".json,application/json" class="vh">
+      </div>
+      <textarea id="jsonText" rows="4" placeholder="여기에 JSON을 붙여 넣고 ‘붙여넣은 JSON 가져오기’를 누르세요" aria-label="JSON 붙여넣기"></textarea>
+      <div class="row"><button type="button" id="jsonIn" class="btn">붙여넣은 JSON 가져오기</button></div>
+      <div id="jsonMsg" class="info" role="status"></div>
+      <ul id="jsonErr" class="errlist"></ul>
+    </div>
+  </section>
+</main>
+
+<dialog id="provDlg" aria-labelledby="provTitle">
+  <h2 id="provTitle">이미지 출처·사용 권한</h2>
+  <p class="hint">내려받는 PNG·JPEG 파일 안에 이 내용이 기록됩니다. 이름·연락처·위치 같은 개인정보는 적지 마세요.</p>
+  <label class="chk"><input type="radio" name="provOwn" value="own"> 본인이 직접 만든 이미지입니다</label>
+  <label class="chk"><input type="radio" name="provOwn" value="other"> 본인 제작이 아닙니다 (출처와 허가 근거가 필요해요)</label>
+  <div id="provOther" hidden>
+    <label>원본 출처 URL <input id="provUrl" type="text" inputmode="url" maxlength="500" placeholder="https://..."></label>
+    <label>사용 허가 근거 종류
+      <select id="provType">
+        <option value="license">라이선스명 (예: CC BY 4.0)</option>
+        <option value="tos">이용약관 (약관 이름)</option>
+        <option value="class">수업 제공 표기</option>
+      </select>
+    </label>
+    <label>근거 내용 <input id="provBasis" type="text" maxlength="200" placeholder="예: CC BY 4.0 / 사이트 이용약관 / 2학기 수업 제공 자료"></label>
+  </div>
+  <p id="provErr" class="error" role="alert" hidden></p>
+  <div class="row">
+    <button type="button" id="provOk" class="btn primary">저장하고 계속</button>
+    <button type="button" id="provCancel" class="btn">취소</button>
+  </div>
+</dialog>
+
+<footer class="foot">
+  <a href="tests.html">극단 입력 12건 검사 보기</a> ·
+  모든 처리는 브라우저 안에서만 이루어지며 외부로 전송하지 않습니다.
+</footer>
+
+<script src="js/core.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
